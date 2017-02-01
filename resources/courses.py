@@ -9,15 +9,9 @@ import models
 course_fields = {
     'id': fields.Integer,
     'title': fields.String,
-    'url': fields.String,
-    'reviews': fields.List(fields.String)
+    'url': fields.String
 }
 
-
-def add_reviews(course):
-    course.reviews = [url_for('resources.reviews.review', id=review.id)
-                      for review in course.review_set]
-    return course
 
 
 def course_or_404(course_id):
@@ -57,6 +51,19 @@ class CourseList(Resource):
         args = self.reqparse.parse_args()
         course = models.Course.create(**args)
         return (course)
+
+    @marshal_width(course_fields)
+    def put(self, id):
+        args = self.reqparse.args()
+        query = models.Course.update(**args).where(models.Course.id == id)
+        query.execute()
+        return models.Course.get(models.Course.id == id)
+
+    @marshal_width(course_fields)
+    def delete(self, id):
+        query = models.Course.delete().where(models.Course.id == id)
+        query.execute()
+
 
 
 class Course(Resource):
